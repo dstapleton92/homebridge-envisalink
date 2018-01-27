@@ -96,3 +96,6 @@ Ex:
 ```
 
 Only DSC panels have been tested thus far.  If you'd like to provide a Honeywell device for testing, I'd be glad to add support for this device and ship it back to you.
+
+## Note for Developers
+This project has been updated to use ES6 Classes and other features for improved readability and convenience. To continue supporting older versions of Node, this project has been set up to use Babel. Run `npm install` to install the development dependences. Be sure you make your changes to the source files in `src`, and then run `npm run build` to recompile the changes to the `lib` folder.
