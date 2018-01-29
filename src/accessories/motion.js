@@ -18,4 +18,4 @@ const buildMotionSensor = (Base) => {
 
     return MotionSensor;
 }
-export default buildMotionDetector;
+export default buildMotionSensor;
