@@ -2,9 +2,9 @@
   "name": "homebridge-envisalink",
   "version": "0.2.3",
   "description": "A homebridge plugin for the EnvisaLink alarm module",
-  "main": "lib/compiled.js",
+  "main": "lib/index.js",
   "scripts": {
-    "build": "babel src/index.js -o lib/compiled.js"
+    "build": "babel src -d lib"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
   "homepage": "https://github.com/dustindclark/homebridge-envisalink#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1"
   }
