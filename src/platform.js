@@ -1,5 +1,5 @@
-import nap from 'nodealarmproxy';
 import elink from 'nodealarmproxy/envisalink';
+import { initializeNAP, manualNAPCommand } from './nap';
 import buildAccessories from './accessories';
 import 'babel-polyfill';
 const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
@@ -10,24 +10,22 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
         SmokeSensor,
         Partition
     } = buildAccessories(Service, Characteristic, Accessory, uuid);
+    
     class EnvisalinkPlatform {
         constructor(log, config) {
             this.initialLaunch = true;
             this.log = log;
-            this.deviceType = config.deviceType;
-            this.pin = config.pin;
-            this.password = config.password;
-            this.partitions = config.partitions;
-            this.zones = config.zones ? config.zones : [];
+            if (!config.zones) {
+                config.zones = [];
+            }
             this.userPrograms = config.userPrograms ? config.userPrograms : [];
 
-            this.log(`Configuring Envisalink platform,  Host: ${config.host}, port: ${config.port}, type: ${this.deviceType}`);
+            this.log(`Configuring Envisalink platform,  Host: ${config.host}, port: ${config.port}, type: ${config.deviceType}`);
 
             this.platformPartitionAccessories = [];
-            for (let i = 0; i < this.partitions.length; i++) {
-                let partition = this.partitions[i];
-                partition.pin = config.pin;
-                let accessory = new EnvisalinkAccessory(this.log, "partition", partition, i + 1);
+            for (let i = 0; i < config.partitions.length; i++) {
+                let partition = config.partitions[i];
+                let accessory = new Partition(this.log, partition.name, i + 1, config.pin);
                 this.platformPartitionAccessories.push(accessory);
             }
             this.platformZoneAccessories = [];
@@ -38,10 +36,10 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
             * (1) Prevents UUID collisions when userPrograms are initialized
             * (2) This variable tells Node Alarm Proxy the maximum zone number to monitor
             */
-            let maxZone = this.zones.length;
+            let maxZone = config.zones.length;
             if (!config.suppressZoneAccessories) {
-                for (let i = 0; i < this.zones.length; i++) {
-                    let zone = this.zones[i];
+                for (let i = 0; i < config.zones.length; i++) {
+                    let zone = config.zones[i];
                     let zoneNum = zone.zoneNumber ? zone.zoneNumber : (i + 1);
                     if (zoneNum > maxZone) {
                         maxZone = zoneNum;
@@ -91,13 +89,13 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
                 serverport: config.serverport ? config.serverport : 4026,
                 zone: maxZone > 0 ? maxZone : null,
                 userPrograms: this.userPrograms.length > 0 ? this.userPrograms.length : null,
-                partition: this.partitions ? this.partitions.length : 1,
+                partition: config.partitions ? config.partitions.length : 1,
                 proxyenable: true,
                 atomicEvents: true
             };
             this.log(`Zones: ${this.alarmConfig.zone}`);
             this.log(`User Programs: ${this.alarmConfig.userPrograms}`);
-            this.alarm = nap.initConfig(this.alarmConfig);
+            this.alarm = initializeNAP(this.alarmConfig);
             this.log(`Node alarm proxy started.  Listening for connections at: ${this.alarmConfig.serverhost}:${this.alarmConfig.serverport}`);
             this.alarm.on('data', this.systemUpdate.bind(this));
             this.alarm.on('zoneupdate', this.zoneUpdate.bind(this));
@@ -107,7 +105,15 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
 
             if (!config.suppressClockReset) {
                 let nextSetTime = () => {
-                    this.platformPartitionAccessories[0].addDelayedEvent('time');
+                    let date = dateFormat(new Date(), "HHMMmmddyy");
+                    this.log(`Setting the current time on the alarm system to: ${date}`);
+                    manualNAPCommand(`010${date}`, (data) => {
+                        if (data) {
+                            this.log("Time not set successfully.");
+                        } else {
+                            this.log("Time set successfully.");
+                        }
+                    });
                     setTimeout(nextSetTime, 60 * 60 * 1000);
                 }
 
@@ -183,7 +189,7 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
             if (accessoryIndex !== undefined) {
                 let accessory = this.platformZoneAccessories[accessoryIndex];
                 if (accessory) {
-                    accessory.setState({
+                    accessory.handleEnvisalinkData({
                         ...elink.tpicommands[data.code],
                         code: data.code,
                         mode: data.mode
@@ -205,46 +211,12 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
 
             let partition = this.platformPartitionAccessories[data.partition - 1];
             if (partition) {
-                partition.status = elink.tpicommands[data.code];
-                partition.status.code = data.code;
-                partition.status.mode = data.mode;
-                partition.status.partition = data.partition;
-
-                let accservice = (partition.getServices())[0];
-                let accstatus;
-
-                if (accservice) {
-                    if (data.code == "656") { //exit delay
-                        enableSet = false;
-                        let armMode = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-                        if (partition.lastTargetState != null) {
-                            armMode = partition.lastTargetState;
-                        }
-                        partition.lastTargetState = null;
-                        accservice.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(armMode);
-                        enableSet = true;
-                    } else if (data.code == "657") { //entry-delay
-                    } else if (data.code == "652" || data.code == "654" || data.code == "655") { //Armed, Alarm, Disarmed
-                        partition.getAlarmState(function (nothing, resultat) {
-
-                            if (partition.currentState !== undefined) {
-                                delete partition.currentState;
-                            }
-
-                            partition.lastTargetState = null;
-                            enableSet = false;
-                            // TODO: This is incorrect (results in target state being set to Triggered)
-                            accservice.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(resultat);
-                            enableSet = true;
-                            accservice.getCharacteristic(Characteristic.SecuritySystemCurrentState).setValue(resultat);
-                        });
-                    } else if (data.code == "626" || data.code == "650" || data.code == "651" || data.code == "653") { //Ready, Not Ready, Ready Force ARM
-                        partition.getReadyState(function (nothing, resultat) {
-                            console.log(`Setting Obstructed: ${resultat}`);
-                            accservice.getCharacteristic(Characteristic.ObstructionDetected).setValue(resultat);
-                        });
-                    }
-                }
+                partition.handleEnvisalinkData({
+                    ...elink.tpicommands[data.code],
+                    code: data.code,
+                    mode: data.mode,
+                    partition: data.partition
+                });
             }
         }
 

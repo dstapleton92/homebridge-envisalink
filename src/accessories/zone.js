@@ -23,8 +23,7 @@ const buildZoneBase = (Base) => {
             callback(null, currentState);
         }
 
-        setState(state) {
-            // TODO: Set the state
+        handleEnvisalinkData(state) {
             this.state = state;
             let service = this.getServices()[0];
             this.getState((noarg, state) => {

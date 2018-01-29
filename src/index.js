@@ -1,4 +1,3 @@
-import nap from 'nodealarmproxy';
 import elink from 'nodealarmproxy/envisalink';
 import dateFormat from 'dateformat';
 import buildPlatform from './platform';
