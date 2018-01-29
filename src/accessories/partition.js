@@ -1,11 +1,11 @@
-import { getNAPConnection } from '../nap';
+import { manualNAPCommand } from '../nap';
 
 const buildPartition = (Base) => {
     class Partition extends Base {
         constructor(log, name, partitionNumber, pin) {
             super(log, name, partitionNumber);
             this.pin = pin;
-            this.lastTargetState = this.Characteristic.SecuritySystemTargetState.DISARMED
+            this.lastTargetState = this.Characteristic.SecuritySystemTargetState.DISARMED;
             let service = new this.Service.SecuritySystem(this.name);
             service
                 .getCharacteristic(this.Characteristic.SecuritySystemCurrentState)
@@ -23,6 +23,7 @@ const buildPartition = (Base) => {
         getCurrentState(callback) {
             let partitionState;
             if (this.state) {
+                // TODO: switch to tpi codes
                 switch (this.state.send) {
                     case 'alarm':
                         partitionState = this.Characteristic.SecuritySystemCurrentState.TRIGGERED;
@@ -43,8 +44,9 @@ const buildPartition = (Base) => {
                         // TODO: implement lastTargetState
                         partitionState = this.lastTargetState;
                         break;
-                    case 'disarmed':
+                    case 'ready':
                         partitionState = this.Characteristic.SecuritySystemCurrentState.DISARMED;
+                        break;
                     default:
                         this.log(`Unhandled alarm state: ${this.state.send}`);
                         partitionState = this.Characteristic.SecuritySystemCurrentState.DISARMED;
@@ -72,23 +74,22 @@ const buildPartition = (Base) => {
             switch (state) {
                 case this.Characteristic.SecuritySystemTargetState.DISARMED:
                     this.log("Disarming alarm with PIN.");
-                    command = `040${this.partition}${this.pin}`;
+                    command = `040${this.partitionNumber}${this.pin}`;
                     break;
                 case this.Characteristic.SecuritySystemTargetState.STAY_ARM:
                 case this.Characteristic.SecuritySystemTargetState.NIGHT_ARM:
                     this.log("Arming alarm to Stay/Night.");
-                    command = `031${this.partition}`;
+                    command = `031${this.partitionNumber}`;
                     break;
                 case this.Characteristic.SecuritySystemTargetState.AWAY_ARM:
                     this.log("Arming alarm to Away.");
-                    command = `030${this.partition}`;
+                    command = `030${this.partitionNumber}`;
                     break;
                 default:
                     this.log(`Attempted to set target state to unhandled value: ${state}`);
             }
             if (command) {
-                let nap = getNAPConnection();
-                nap.manualCommand(command, (msg) => {
+                manualNAPCommand(command, (msg) => {
                     if (msg === '024') {
                         // TODO: Properly handle this!
                         callback(null);
@@ -109,6 +110,7 @@ const buildPartition = (Base) => {
                 let currentStateCharacteristic = service.getCharacteristic(this.Characteristic.SecuritySystemCurrentState);
                 let targetStateCharacteristic = service.getCharacteristic(this.Characteristic.SecuritySystemTargetState);
 
+                // TODO: switch to tpi codes
                 switch (state.send) {
                     case 'alarm':
                         // alarm triggered!
@@ -128,7 +130,7 @@ const buildPartition = (Base) => {
                             this.log(`Unhandled arm mode: ${state.mode}`);
                         }
                         break;
-                    case 'disarmed':
+                    case 'ready':
                         // partition disarmed
                         currentStateCharacteristic.setValue(this.Characteristic.SecuritySystemCurrentState.DISARMED);
                         targetStateCharacteristic.setValue(this.Characteristic.SecuritySystemTargetState.DISARMED);

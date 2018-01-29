@@ -16,6 +16,8 @@ const buildBaseAccessory = (Service, Characteristic, Accessory, uuid, log) => {
             this.uuid_base = uuid_base;
             this.log = log;
             this.name = name;
+            this.partitionNumber = partitionNumber;
+            this.zoneNumber = zoneNumber;
 
             this.services = [];
         }

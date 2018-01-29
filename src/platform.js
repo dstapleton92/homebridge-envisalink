@@ -1,4 +1,5 @@
 import elink from 'nodealarmproxy/envisalink';
+import dateFormat from 'dateformat';
 import { initializeNAP, manualNAPCommand } from './nap';
 import buildAccessories from './accessories';
 import 'babel-polyfill';

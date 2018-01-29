@@ -1,5 +1,3 @@
-import elink from 'nodealarmproxy/envisalink';
-import dateFormat from 'dateformat';
 import buildPlatform from './platform';
 
 import 'babel-polyfill';
