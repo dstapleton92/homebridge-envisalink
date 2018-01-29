@@ -7,7 +7,7 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
         ContactSensor,
         LeakSensor,
         MotionSensor,
-        SmokeDetector,
+        SmokeSensor,
         Partition
     } = buildAccessories(Service, Characteristic, Accessory, uuid);
     class EnvisalinkPlatform {
@@ -42,17 +42,32 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
             if (!config.suppressZoneAccessories) {
                 for (let i = 0; i < this.zones.length; i++) {
                     let zone = this.zones[i];
-                    if (zone.type == "motion" || zone.type == "window" || zone.type == "door" || zone.type == "leak" || zone.type == "smoke") {
-                        let zoneNum = zone.zoneNumber ? zone.zoneNumber : (i + 1);
-                        if (zoneNum > maxZone) {
-                            maxZone = zoneNum;
-                        }
-                        let accessory = new EnvisalinkAccessory(this.log, zone.type, zone, zone.partition, zoneNum);
+                    let zoneNum = zone.zoneNumber ? zone.zoneNumber : (i + 1);
+                    if (zoneNum > maxZone) {
+                        maxZone = zoneNum;
+                    }
+                    let accessory;
+                    switch (zone.type) {
+                        case 'motion':
+                            accessory = new MotionSensor(this.log, zone.name, zone.partition, zoneNum);
+                            break;
+                        case 'window':
+                        case 'door':
+                            accessory = new ContactSensor(this.log, zone.name, zone.partition, zoneNum);
+                            break;
+                        case 'leak':
+                            accessory = new LeakSensor(this.log, zone.name, zone.partition, zoneNum);
+                            break;
+                        case 'smoke':
+                            accessory = new SmokeSensor(this.log, zone.name, zone.partition, zoneNum);
+                            break;
+                        default:
+                            this.log(`Unhandled accessory type: ${zone.type}`);
+                    }
+                    if (accessory) {
                         let accessoryIndex = this.platformZoneAccessories.push(accessory) - 1;
                         this.platformZoneAccessoryMap[`z.${zoneNum}`] = accessoryIndex;
-                    } else {
-                        this.log(`Unhandled accessory type: ${zone.type}`);
-                    }
+                    } 
                 }
             }
             this.platformProgramAccessories = [];
