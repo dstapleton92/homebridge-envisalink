@@ -2,7 +2,7 @@ import nap from 'nodealarmproxy';
 
 let napConnection;
 
-function initializeNAP(alarmConfig) {
+export function initializeNAP(alarmConfig) {
     napConnection = nap.initConfig(alarmConfig);
     return napConnection;
 }
@@ -18,6 +18,3 @@ export function getNAPConnection() {
 export function manualNAPCommand(command, callback) {
     return nap.manualCommand(command, callback);
 }
-
-
-export default initializeNAP;

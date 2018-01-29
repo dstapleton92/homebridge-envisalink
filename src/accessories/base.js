@@ -1,13 +1,13 @@
 const buildBaseAccessory = (Service, Characteristic, Accessory, uuid, log) => {
 
     class EnvisalinkAccessory extends Accessory {
-        constructor(log, accessoryType, config, partition, zone) {
-            let id = `envisalink.${partition}`;
-            if (zone) {
-                id += `.${zone}`;
+        constructor(log, name, partitionNumber, zoneNumber) {
+            let id = `envisalink.${partitionNumber}`;
+            if (zoneNumber) {
+                id += `.${zoneNumber}`;
             }
             let uuid_base = uuid.generate(id);
-            super(config.name, uuid_base);
+            super(name, uuid_base);
 
             this.Service = Service;
             this.Characteristic = Characteristic;
@@ -15,11 +15,7 @@ const buildBaseAccessory = (Service, Characteristic, Accessory, uuid, log) => {
 
             this.uuid_base = uuid_base;
             this.log = log;
-            this.name = config.name;
-            this.partition = partition;
-            this.pin = config.pin;
-            this.zone = zone;
-            this.status = null;
+            this.name = name;
 
             this.services = [];
         }
