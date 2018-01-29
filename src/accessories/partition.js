@@ -5,7 +5,7 @@ const buildPartition = (Base) => {
         constructor(log, name, partitionNumber, pin) {
             super(log, name, partitionNumber);
             this.pin = pin;
-            this.lastTargetState = this.Characteristic.SecuritySystemTargetState.DISARMED;
+            this.lastTargetState = this.Characteristic.SecuritySystemTargetState.DISARM;
             let service = new this.Service.SecuritySystem(this.name);
             service
                 .getCharacteristic(this.Characteristic.SecuritySystemCurrentState)
@@ -62,17 +62,17 @@ const buildPartition = (Base) => {
         }
 
         setTargetState(state, callback) {
-            if (state !== this.Characteristic.SecuritySystemTargetState.DISARMED && this.state && this.state.code === '651') {
+            if (state !== this.Characteristic.SecuritySystemTargetState.DISARM && this.state && this.state.code === '651') {
                 // partition is NOT READY
                 let service = this.getServices()[0];
-                service.getCharacteristic(this.Characteristic.SecuritySystemTargetState).setValue(Characteristic.SecuritySystemTargetState.DISARMED);
-                callback(null, Characteristic.SecuritySystemTargetState.DISARMED);
+                service.getCharacteristic(this.Characteristic.SecuritySystemTargetState).setValue(Characteristic.SecuritySystemTargetState.DISARM);
+                callback(null, Characteristic.SecuritySystemTargetState.DISARM);
                 return;
             }
             this.log(`Attempting to set alarm state to: ${state}`);
             let command;
             switch (state) {
-                case this.Characteristic.SecuritySystemTargetState.DISARMED:
+                case this.Characteristic.SecuritySystemTargetState.DISARM:
                     this.log("Disarming alarm with PIN.");
                     command = `040${this.partitionNumber}${this.pin}`;
                     break;
@@ -133,8 +133,9 @@ const buildPartition = (Base) => {
                     case 'ready':
                         // partition disarmed
                         currentStateCharacteristic.setValue(this.Characteristic.SecuritySystemCurrentState.DISARMED);
-                        targetStateCharacteristic.setValue(this.Characteristic.SecuritySystemTargetState.DISARMED);
-                        this.lastTargetState = this.Characteristic.SecuritySystemTargetState.DISARMED;
+                        // TODO: verify that this line is not needed
+                        // targetStateCharacteristic.setValue(this.Characteristic.SecuritySystemTargetState.DISARM);
+                        this.lastTargetState = this.Characteristic.SecuritySystemTargetState.DISARM;
                         break;
                     case 'entrydelay':
                         break;
@@ -143,7 +144,6 @@ const buildPartition = (Base) => {
                         // There is no bad effect here; it will only cause the "set pending" spinner in Homekit
                         // when the partition actually arms, the correct status will be set
                         targetStateCharacteristic.setValue(this.Characteristic.SecuritySystemTargetState.AWAY_ARM);
-                        this.lastTargetState = this.Characteristic.SecuritySystemTargetState.AWAY_ARM;
                         break;
                 }
             }
