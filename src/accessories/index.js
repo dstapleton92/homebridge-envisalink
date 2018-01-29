@@ -2,8 +2,8 @@ import buildBaseAccessory from './base';
 import buildBaseZoneAccessory from './zone';
 import buildContactSensor from './contact';
 import buildLeakSensor from './leak';
-import buildMotionDetector from './motion';
-import buildSmokeDetector from './smoke';
+import buildMotionSensor from './motion';
+import buildSmokeSensor from './smoke';
 import buildPartition from './partition';
 
 const buildAccessories = (Service, Characteristic, Accessory, uuid) => {
@@ -12,8 +12,8 @@ const buildAccessories = (Service, Characteristic, Accessory, uuid) => {
     return {
         ContactSensor: buildContactSensor(ZoneBase),
         LeakSensor: buildLeakSensor(ZoneBase),
-        MotionDetector: buildMotionDetector(ZoneBase),
-        SmokeDetector: buildSmokeDetector(ZoneBase),
+        MotionSensor: buildMotionSensor(ZoneBase),
+        SmokeSensor: buildSmokeSensor(ZoneBase),
         Partition: buildPartition(Base)
     }
 }

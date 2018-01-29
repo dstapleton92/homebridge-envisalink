@@ -6,7 +6,7 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
     const {
         ContactSensor,
         LeakSensor,
-        MotionDetector,
+        MotionSensor,
         SmokeDetector,
         Partition
     } = buildAccessories(Service, Characteristic, Accessory, uuid);
