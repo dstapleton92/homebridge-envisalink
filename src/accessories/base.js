@@ -36,46 +36,11 @@ const buildBaseAccessory = (Service, Characteristic, Accessory, uuid, log) => {
                     .addCharacteristic(Characteristic.ObstructionDetected)
                     .on('get', this.getReadyState.bind(this));
                 this.services.push(service);
-            } else if (this.accessoryType == "motion") {
-                let service = new Service.MotionSensor(this.name);
-                service
-                    .getCharacteristic(Characteristic.MotionDetected)
-                    .on('get', this.getMotionStatus.bind(this));
-                this.services.push(service);
-            } else if (this.accessoryType == "door") {
-                let service = new Service.ContactSensor(this.name);
-                service
-                    .getCharacteristic(Characteristic.ContactSensorState)
-                    .on('get', this.getContactSensorState.bind(this));
-                this.services.push(service);
-            } else if (this.accessoryType == "window") {
-                let service = new Service.ContactSensor(this.name);
-                service
-                    .getCharacteristic(Characteristic.ContactSensorState)
-                    .on('get', this.getContactSensorState.bind(this));
-                this.services.push(service);
-            } else if (this.accessoryType == "leak") {
-                let service = new Service.LeakSensor(this.name);
-                service
-                    .getCharacteristic(Characteristic.LeakDetected)
-                    .on('get', this.getLeakStatus.bind(this));
-                this.services.push(service);
-            } else if (this.accessoryType == "smoke") {
-                let service = new Service.SmokeSensor(this.name);
-                service
-                    .getCharacteristic(Characteristic.SmokeDetected)
-                    .on('get', this.getSmokeStatus.bind(this));
-                this.services.push(service);
             }
         }
 
         getServices() {
             return this.services;
-        }
-
-        getMotionStatus(callback) {
-            let motionDetected = this.status && this.status.send === "open";
-            callback(null, motionDetected);
         }
 
         getReadyState(callback) {
@@ -118,30 +83,6 @@ const buildBaseAccessory = (Service, Characteristic, Accessory, uuid, log) => {
 
         setAlarmState(state, callback) {
             this.addDelayedEvent('alarm', state, callback);
-        }
-
-        getContactSensorState(callback) {
-            let contactState = Characteristic.ContactSensorState.CONTACT_DETECTED;
-            if (this.status && this.status.send == "open") {
-                contactState = Characteristic.ContactSensorState.CONTACT_NOT_DETECTED;
-            }
-            callback(null, contactState);
-        }
-
-        getLeakStatus(callback) {
-            let leakState = Characteristic.LeakDetected.LEAK_NOT_DETECTED;
-            if (this.status && this.status.send == "open") {
-                leakState = Characteristic.LeakDetected.LEAK_DETECTED;
-            }
-            callback(null, leakState);
-        }
-
-        getSmokeStatus(callback) {
-            let smokeState = Characteristic.SmokeDetected.SMOKE_NOT_DETECTED;
-            if (this.status && this.status.send == "open") {
-                smokeState = Characteristic.SmokeDetected.SMOKE_DETECTED;
-            }
-            callback(null, smokeState);
         }
 
         processAlarmState(nextEvent, callback) {
