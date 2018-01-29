@@ -10,7 +10,7 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
         SmokeSensor,
         Partition
     } = buildAccessories(Service, Characteristic, Accessory, uuid);
-    
+
     class EnvisalinkPlatform {
         constructor(log, config) {
             this.initialLaunch = true;
@@ -72,10 +72,10 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
             for (let i = 0; i < this.userPrograms.length; i++) {
                 let program = this.userPrograms[i];
                 if (program.type === "smoke") {
-                    let accessory = new EnvisalinkAccessory(this.log, program.type, program, program.partition, maxZone + i + 1);
+                    let accessory = new SmokeSensor(this.log, program.name, program.partition, maxZone + i + 1);
                     this.platformProgramAccessories.push(accessory);
                 } else {
-                    this.log(`Unhandled accessory type: ${program.type}`);
+                    this.log(`Unhandled user program accessory type: ${program.type}`);
                 }
             }
 
@@ -133,45 +133,44 @@ const buildPlatform = (Service, Characteristic, Accessory, uuid) => {
                 systemStatus = data;
             }
 
-            if (systemStatus) {
-                for (let i = 0; i < this.platformProgramAccessories.length; i++) {
-                    let programAccessory = this.platformProgramAccessories[i];
-                    let accservice = (programAccessory.getServices())[0];
-                    if (accservice) {
-                        let code = systemStatus.code && systemStatus.code.substring(0, 3);
-                        if (programAccessory.accessoryType === 'smoke' && code === '631') {
-                            accservice.getCharacteristic(Characteristic.SmokeDetected).setValue(Characteristic.SmokeDetected.SMOKE_DETECTED);
+            // if (systemStatus) {
+            //     for (let i = 0; i < this.platformProgramAccessories.length; i++) {
+            //         let programAccessory = this.platformProgramAccessories[i];
+            //         let accservice = (programAccessory.getServices())[0];
+            //         if (accservice) {
+            //             let code = systemStatus.code && systemStatus.code.substring(0, 3);
+            //             if (programAccessory instanceof SmokeSensor && code === '631') {
+            //                 accservice.getCharacteristic(Characteristic.SmokeDetected).setValue(Characteristic.SmokeDetected.SMOKE_DETECTED);
 
-                            let partition = this.platformPartitionAccessories[parseInt(programAccessory.partition) - 1];
-                            let partitionService = partition && (partition.getServices())[0];
-                            partitionService && partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue(function (context, value) {
-                                partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(Characteristic.SecuritySystemTargetState.STAY_ARM);
-                                partition.currentState = value;
-                            });
-                        } else if (programAccessory.accessoryType === 'smoke' && code === '632') {
-                            accservice.getCharacteristic(Characteristic.SmokeDetected).setValue(Characteristic.SmokeDetected.SMOKE_NOT_DETECTED);
-                            let partition = this.platformPartitionAccessories[parseInt(programAccessory.partition) - 1];
-                            let partitionService = partition && (partition.getServices())[0];
-                            if (partition && partition.currentState !== undefined) {
-                                partitionService && partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(partition.currentState);
-                                delete partition.currentState;
-                            }
-                        }
-                    }
-                }
-            }
+            //                 let partition = this.platformPartitionAccessories[parseInt(programAccessory.partition) - 1];
+            //                 let partitionService = partition && (partition.getServices())[0];
+            //                 partitionService && partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue(function (context, value) {
+            //                     partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(Characteristic.SecuritySystemTargetState.STAY_ARM);
+            //                     partition.currentState = value;
+            //                 });
+            //             } else if (programAccessory.accessoryType === 'smoke' && code === '632') {
+            //                 accservice.getCharacteristic(Characteristic.SmokeDetected).setValue(Characteristic.SmokeDetected.SMOKE_NOT_DETECTED);
+            //                 let partition = this.platformPartitionAccessories[parseInt(programAccessory.partition) - 1];
+            //                 let partitionService = partition && (partition.getServices())[0];
+            //                 if (partition && partition.currentState !== undefined) {
+            //                     partitionService && partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(partition.currentState);
+            //                     delete partition.currentState;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
             if (data.partition) {
                 for (let i = 0; i < this.platformPartitionAccessories.length; i++) {
                     let partitionAccessory = this.platformPartitionAccessories[i];
                     let systemStatus = data.partition[`${i + 1}`];
                     if (systemStatus) {
                         let code = systemStatus.code.substring(0, 3);
-                        partitionAccessory.systemStatus = elink.tpicommands[code];
-                        partitionAccessory.systemStatus.code = code;
+                        // partitionAccessory.systemStatus = elink.tpicommands[code];
+                        // partitionAccessory.systemStatus.code = code;
                         if (this.initialLaunch) {
                             this.initialLaunch = false;
                             let mode = code === '652' ? systemStatus.code.substring(3,4) : undefined;
-                            this.log(data);
                             this.partitionUpdate({
                                 code,
                                 mode,
