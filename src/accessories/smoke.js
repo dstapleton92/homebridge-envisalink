@@ -2,12 +2,7 @@ import { ZoneAccessory } from './zone';
 
 class SmokeSensor extends ZoneAccessory {
     constructor(log, name, partitionNumber, zoneNumber) {
-        super(
-            log,
-            name,
-            partitionNumber,
-            zoneNumber
-        );
+        super(log, name, partitionNumber, zoneNumber);
         this.initializeZoneService(
             this.Service.SmokeSensor,
             this.Characteristic.SmokeDetected,
