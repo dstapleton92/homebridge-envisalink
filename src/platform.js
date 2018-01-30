@@ -192,9 +192,9 @@ class EnvisalinkPlatform {
         if (data.code == "652") {
             //0: AWAY, 1: STAY, 2:  ZERO-ENTRY-AWAY, 3:  ZERO-ENTRY-STAY
             if (data.mode == '1' || data.mode == "3") {
-                this.awayStay = Characteristic.SecuritySystemCurrentState.STAY_ARM;
+                this.awayStay = this.Characteristic.SecuritySystemCurrentState.STAY_ARM;
             } else {
-                this.awayStay = Characteristic.SecuritySystemCurrentState.AWAY_ARM;
+                this.awayStay = this.Characteristic.SecuritySystemCurrentState.AWAY_ARM;
             }
         }
 
