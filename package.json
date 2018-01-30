@@ -6,6 +6,9 @@
   "scripts": {
     "build": "babel src -d lib"
   },
+  "pre-commit": [
+    "build"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/dustindclark/homebridge-envisalink"
@@ -33,6 +36,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.6.1"
+    "babel-preset-env": "^1.6.1",
+    "pre-commit": "^1.2.2"
   }
 }
