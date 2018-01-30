@@ -1,32 +1,30 @@
-const buildBaseAccessory = (Service, Characteristic, Accessory, uuid, log) => {
+import { Accessory, Characteristic, Service, uuid } from 'homebridge/node_modules/hap-nodejs';
 
-    class EnvisalinkAccessory extends Accessory {
-        constructor(log, name, partitionNumber, zoneNumber) {
-            let id = `envisalink.${partitionNumber}`;
-            if (zoneNumber) {
-                id += `.${zoneNumber}`;
-            }
-            let uuid_base = uuid.generate(id);
-            super(name, uuid_base);
-
-            this.Service = Service;
-            this.Characteristic = Characteristic;
-            this.Accessory = Accessory;
-
-            this.uuid_base = uuid_base;
-            this.log = log;
-            this.name = name;
-            this.partitionNumber = partitionNumber;
-            this.zoneNumber = zoneNumber;
-
-            this.services = [];
+class BaseAccessory extends Accessory {
+    constructor(log, name, partitionNumber, zoneNumber) {
+        let id = `envisalink.${partitionNumber}`;
+        if (zoneNumber) {
+            id += `.${zoneNumber}`;
         }
+        let uuid_base = uuid.generate(id);
+        super(name, uuid_base);
 
-        getServices() {
-            return this.services;
-        }
+        this.Service = Service;
+        this.Characteristic = Characteristic;
+        this.Accessory = Accessory;
+
+        this.uuid_base = uuid_base;
+        this.log = log;
+        this.name = name;
+        this.partitionNumber = partitionNumber;
+        this.zoneNumber = zoneNumber;
+
+        this.services = [];
     }
 
-    return EnvisalinkAccessory;
+    getServices() {
+        return this.services;
+    }
 }
-export default buildBaseAccessory;
+
+export { BaseAccessory };

@@ -1,21 +1,15 @@
-const buildMotionSensor = (Base) => {
-    class MotionSensor extends Base {
-        constructor(log, name, partitionNumber, zoneNumber) {
-            super(
-                log,
-                name,
-                partitionNumber,
-                zoneNumber
-            );
-            this.initializeZoneService(
-                this.Service.MotionSensor,
-                this.Characteristic.MotionDetected,
-                false,
-                true
-            );
-        }
-    }
+import { ZoneAccessory } from './zone';
 
-    return MotionSensor;
+class MotionSensor extends ZoneAccessory {
+    constructor(log, name, partitionNumber, zoneNumber) {
+        super(log, name, partitionNumber, zoneNumber);
+        this.initializeZoneService(
+            this.Service.MotionSensor,
+            this.Characteristic.MotionDetected,
+            false,
+            true
+        );
+    }
 }
-export default buildMotionSensor;
+
+export { MotionSensor };
