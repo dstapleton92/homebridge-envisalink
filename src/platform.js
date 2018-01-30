@@ -21,8 +21,7 @@ class EnvisalinkPlatform {
             let accessory = new Partition(this.log, partition.name, i + 1, config.pin);
             this.platformPartitionAccessories.push(accessory);
         }
-        this.platformZoneAccessories = [];
-        this.platformZoneAccessoryMap = {};
+        this.platformZoneAccessoryMap = new Map();
 
         /*
         * maxZone variable is very important for two reasons
@@ -56,8 +55,7 @@ class EnvisalinkPlatform {
                         this.log(`Unhandled accessory type: ${zone.type}`);
                 }
                 if (accessory) {
-                    let accessoryIndex = this.platformZoneAccessories.push(accessory) - 1;
-                    this.platformZoneAccessoryMap[`z.${zoneNum}`] = accessoryIndex;
+                    this.platformZoneAccessoryMap.set(`z.${zoneNum}`, accessory);
                 }
             }
         }
@@ -177,9 +175,8 @@ class EnvisalinkPlatform {
     }
 
     zoneUpdate(data) {
-        let accessoryIndex = this.platformZoneAccessoryMap[`z.${data.zone}`];
-        if (accessoryIndex !== undefined) {
-            let accessory = this.platformZoneAccessories[accessoryIndex];
+        if (data.zone) {
+            let accessory = this.platformZoneAccessoryMap.get(`z.${data.zone}`);
             if (accessory) {
                 accessory.handleEnvisalinkData({
                     ...elink.tpicommands[data.code],
@@ -213,7 +210,11 @@ class EnvisalinkPlatform {
     }
 
     accessories(callback) {
-        callback(this.platformPartitionAccessories.concat(this.platformZoneAccessories).concat(this.platformProgramAccessories));
+        callback([
+            ...this.platformPartitionAccessories,
+            ...this.platformZoneAccessoryMap.values(),
+            ...this.platformProgramAccessories
+        ]);
     }
 }
 
