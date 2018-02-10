@@ -2,7 +2,6 @@ import elink from 'nodealarmproxy/envisalink';
 import dateFormat from 'dateformat';
 import { initializeNAP, manualNAPCommand } from './nap';
 import { Partition, ContactSensor, LeakSensor, MotionSensor, SmokeSensor } from './accessories';
-import 'babel-polyfill';
 
 class EnvisalinkPlatform {
     constructor(log, config) {
@@ -189,14 +188,6 @@ class EnvisalinkPlatform {
 
     partitionUpdate(data) {
         let watchevents = ['601', '602', '609', '610', '650', '651', '652', '654', '656', '657'];
-        if (data.code == "652") {
-            //0: AWAY, 1: STAY, 2:  ZERO-ENTRY-AWAY, 3:  ZERO-ENTRY-STAY
-            if (data.mode == '1' || data.mode == "3") {
-                this.awayStay = this.Characteristic.SecuritySystemCurrentState.STAY_ARM;
-            } else {
-                this.awayStay = this.Characteristic.SecuritySystemCurrentState.AWAY_ARM;
-            }
-        }
 
         let partition = this.platformPartitionAccessories[data.partition - 1];
         if (partition) {
