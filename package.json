@@ -4,7 +4,8 @@
   "description": "A homebridge plugin for the EnvisaLink alarm module",
   "main": "lib/index.js",
   "scripts": {
-    "build": "babel src -d lib"
+    "build": "babel src -d lib",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
