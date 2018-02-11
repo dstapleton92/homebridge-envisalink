@@ -126,6 +126,14 @@ class Partition extends BaseAccessory {
                     // partition in alarm
                     // alarm triggered!
                     currentStateCharacteristic.setValue(this.Characteristic.SecuritySystemCurrentState.TRIGGERED);
+                    if (this.lastTargetState === this.Characteristic.SecuritySystemTargetState.DISARM) {
+                        // If the alarm was triggered while in a disarmed state, (e.g. smoke detected, leak detected, etc.)
+                        // we need to update the target state so that the Home app can be used to disarm the partition
+                        // Just using STAY, for no particular reason
+                        this.blockUpdate = true;
+                        targetStateCharacteristic.setValue(this.Characteristic.SecuritySystemTargetState.STAY_ARM);
+                        this.lastTargetState = this.Characteristic.SecuritySystemTargetState.STAY_ARM;
+                    }
                     break;
                 case '652':
                     // armed
