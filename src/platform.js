@@ -123,33 +123,19 @@ class EnvisalinkPlatform {
             systemStatus = data;
         }
 
-        // if (systemStatus) {
-        //     for (let i = 0; i < this.platformProgramAccessories.length; i++) {
-        //         let programAccessory = this.platformProgramAccessories[i];
-        //         let accservice = (programAccessory.getServices())[0];
-        //         if (accservice) {
-        //             let code = systemStatus.code && systemStatus.code.substring(0, 3);
-        //             if (programAccessory instanceof SmokeSensor && code === '631') {
-        //                 accservice.getCharacteristic(Characteristic.SmokeDetected).setValue(Characteristic.SmokeDetected.SMOKE_DETECTED);
-
-        //                 let partition = this.platformPartitionAccessories[parseInt(programAccessory.partition) - 1];
-        //                 let partitionService = partition && (partition.getServices())[0];
-        //                 partitionService && partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).getValue(function (context, value) {
-        //                     partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(Characteristic.SecuritySystemTargetState.STAY_ARM);
-        //                     partition.currentState = value;
-        //                 });
-        //             } else if (programAccessory.accessoryType === 'smoke' && code === '632') {
-        //                 accservice.getCharacteristic(Characteristic.SmokeDetected).setValue(Characteristic.SmokeDetected.SMOKE_NOT_DETECTED);
-        //                 let partition = this.platformPartitionAccessories[parseInt(programAccessory.partition) - 1];
-        //                 let partitionService = partition && (partition.getServices())[0];
-        //                 if (partition && partition.currentState !== undefined) {
-        //                     partitionService && partitionService.getCharacteristic(Characteristic.SecuritySystemTargetState).setValue(partition.currentState);
-        //                     delete partition.currentState;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        if (systemStatus) {
+            for (let i = 0; i < this.platformProgramAccessories.length; i++) {
+                let programAccessory = this.platformProgramAccessories[i];
+                if (programAccessory instanceof SmokeSensor && systemStatus.code) {
+                    let code = systemStatus.code.substring(0, 3);
+                    if (code === '631') {
+                        programAccessory.trigger();
+                    } else if (code === '632') {
+                        programAccessory.reset();
+                    }
+                }
+            }
+        }
         if (data.partition) {
             for (let i = 0; i < this.platformPartitionAccessories.length; i++) {
                 let partitionAccessory = this.platformPartitionAccessories[i];
